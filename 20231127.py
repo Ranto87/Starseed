@@ -4,10 +4,37 @@ Created on Mon Nov 27 09:46:54 2023
 
 @author: matoda
 """
+import importlib
+import subprocess
 
+packages_to_check = ["pandas", "networkx", "plotly", "dash", "re"]
+
+def install_if_not_exists(package_name):
+    try:
+        importlib.import_module(package_name)
+        print(f"{package_name} is already installed.")
+    except ImportError:
+        print(f"Installing {package_name}...")
+        try:
+            subprocess.check_call(["pip", "install", package_name])
+        except Exception as e:
+            print(f"Failed to install {package_name}. Error: {e}")
+        else:
+            print(f"{package_name} has been successfully installed.")
+
+# Check and install each package
+for package in packages_to_check:
+    install_if_not_exists(package)
+
+import re
 import pandas as pd
 import networkx as nx
+import dash
+from dash import dcc, html
+from dash import dash_table
+from dash.dependencies import Input, Output, State
 import plotly.graph_objects as go
+
 
 # Load the data
 data = pd.read_excel('G:/내 드라이브/StarSeed/Starseed 스킬네트워크 작업.xlsx', sheet_name='스킬효과 작업 내역')
@@ -44,13 +71,7 @@ dataC.columns = ['name', 'effect','trigger_effect']
 # 기존 'source-target' 엣지와 'trigger' 엣지를 병합
 effect_combined = pd.concat([dataA, dataB, dataC])
 
-import dash
-from dash import dcc, html
-from dash import dash_table
-from dash.dependencies import Input, Output, State
-import plotly.graph_objects as go
-import networkx as nx
-import pandas as pd
+
 
 G_final_combined = nx.Graph()
 # effect_combined 데이터를 사용하여 연결 구성
@@ -210,7 +231,7 @@ def find_related_characters(selected_node, data):
     mask = data.apply(lambda col: col.str.contains(selected_node_escaped)).any(axis=1)
     related_data = data[mask]
     return related_data
-import re
+
 @app.callback(
     [Output('network-graph', 'figure'), 
      Output('node-info', 'children'),
